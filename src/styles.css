@@ -1,0 +1,58 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/assets/fonts/montserrat/montserrat-medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-montserrat: 'Montserrat', sans-serif;
+
+  /* crea la utility: animate-fade-in */
+  --animate-fade-in: fade-in 0.3s ease-in-out both;
+
+  /* @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  } */
+  @keyframes fade-in {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* opcional: para salida */
+  --animate-fade-out: fade-out 0.2s ease-in-out both;
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@plugin "daisyui" {
+  themes:
+    light --default,
+    dark --prefersdark,
+    night;
+}
+
+html {
+  font-family: var(--font-montserrat);
+}
