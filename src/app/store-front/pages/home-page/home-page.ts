@@ -3,10 +3,11 @@ import { rxResource } from '@angular/core/rxjs-interop';
 
 import { ProductsService } from '@products/services/products.service';
 import { ProductCard } from '@products/components/product-card/product-card';
+import { Pagination } from '@shared/components/pagination/pagination';
 
 @Component({
   selector: 'app-home-page',
-  imports: [ProductCard],
+  imports: [ProductCard, Pagination],
   templateUrl: './home-page.html',
 })
 export class HomePage {
