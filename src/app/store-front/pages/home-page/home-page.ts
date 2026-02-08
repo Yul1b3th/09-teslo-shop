@@ -24,7 +24,10 @@ export class HomePage {
   productsResource = rxResource({
     params: () => ({}), // dispara la carga al crear el componente
     stream: ({ params }) => {
-      return this.productsService.getProducts(); // Observable<Product[]>
+      return this.productsService.getProducts({
+        limit: 1,
+        gender: 'women',
+      }); // Observable<Product[]>
     },
   });
   // productsResource tiene isLoading, isError, etc
