@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 
 import { ProductsService } from '@products/services/products.service';
-import { ProductCard } from '@store-front/components/product-card/product-card';
+import { ProductCard } from '@products/components/product-card/product-card';
 
 @Component({
   selector: 'app-home-page',
@@ -24,11 +24,15 @@ export class HomePage {
   productsResource = rxResource({
     params: () => ({}), // dispara la carga al crear el componente
     stream: ({ params }) => {
-      return this.productsService.getProducts({
-        limit: 1,
-        gender: 'women',
-      }); // Observable<Product[]>
+      return this.productsService.getProducts({}); // Observable<Product[]>
     },
   });
   // productsResource tiene isLoading, isError, etc
+  // Con parametros
+  //   stream: ({ params }) => {
+  //   return this.productsService.getProducts({
+  //     limit: 1,
+  //     gender: 'women',
+  //   }); // Observable<Product[]>
+  // },
 }
