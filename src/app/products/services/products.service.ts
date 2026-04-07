@@ -17,8 +17,8 @@ export class ProductsService {
   private http = inject(HttpClient);
 
   // Es un lugar donde voy a consultar la información
-  private productsCache = new Map<string, ProductsResponse>();
-  private productCache = new Map<string, Product>();
+  private productsCache = new Map<string, ProductsResponse>(); // llave: '9-0-'' -> valor: ProductsResponse
+  private productCache = new Map<string, Product>(); // llave: 'id-slug' -> valor: Product
 
   getProducts(options: Options): Observable<ProductsResponse> {
     const { limit = 9, offset = 0, gender = '' } = options;
@@ -26,6 +26,7 @@ export class ProductsService {
 
     const key = `${limit}-${offset}-${gender}`; // 9-0-''
 
+    // Verifico si la respuesta ya está en el cache
     if (this.productsCache.has(key)) {
       return of(this.productsCache.get(key)!);
     }
@@ -40,17 +41,19 @@ export class ProductsService {
       })
       .pipe(
         tap((resp) => console.log(resp)),
-        tap((resp) => this.productsCache.set(key, resp)),
+        tap((resp) => this.productsCache.set(key, resp)), // Guardo la respuesta en el cache
+        tap((resp) => console.log(this.productsCache.entries())),
       );
   }
 
   getProductByIdSlug(idSlug: string): Observable<Product> {
+    // Verifico si el producto ya está en el cache
     if (this.productCache.has(idSlug)) {
       return of(this.productCache.get(idSlug)!);
     }
 
     return this.http
       .get<Product>(`${baseUrl}/products/${idSlug}`)
-      .pipe(tap((product) => this.productCache.set(idSlug, product)));
+      .pipe(tap((product) => this.productCache.set(idSlug, product))); // Guardo el producto en el cache
   }
 }

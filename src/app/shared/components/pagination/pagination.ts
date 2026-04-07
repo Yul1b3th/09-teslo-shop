@@ -1,5 +1,5 @@
-import { Component, computed, input, linkedSignal, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, input, linkedSignal, Signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pagination',
@@ -13,7 +13,8 @@ export class Pagination {
   // linkedSignal nos permite inicializar una Signal
   activePage = linkedSignal(this.currentPage);
 
-  getPagesList = computed(() => {
+  // Arreglo basado en las paginas
+  getPagesList: Signal<number[]> = computed(() => {
     // callback para inicializar valores (_, i) => i + 1
     return Array.from({ length: this.pages() }, (_, i) => i + 1);
   });
