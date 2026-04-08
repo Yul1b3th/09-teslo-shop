@@ -44,20 +44,12 @@ export class AuthService {
         password,
       })
       .pipe(
-        tap((resp) => {
-          this._user.set(resp.user);
-          this._authStatus.set('authenticated');
-          this._token.set(resp.token);
-
-          localStorage.setItem('token', resp.token);
+        map((resp) => {
+          const result = this.handleAuthSuccess(resp);
+          console.log('Valor del map en login:', result);
+          return result;
         }),
-        map(() => true),
-        catchError((Error: any) => {
-          this._user.set(null);
-          this._token.set(null);
-          this._authStatus.set('not-authenticated');
-          return of(false);
-        }),
+        catchError((Error: any) => this.handleAuthError(Error)),
       );
   }
 
@@ -65,6 +57,7 @@ export class AuthService {
     const token = localStorage.getItem('token');
 
     if (!token) {
+      this.logout();
       return of(false);
     }
 
@@ -75,20 +68,30 @@ export class AuthService {
         },
       })
       .pipe(
-        tap((resp) => {
-          this._user.set(resp.user);
-          this._authStatus.set('authenticated');
-          this._token.set(resp.token);
-
-          localStorage.setItem('token', resp.token);
-        }),
-        map(() => true),
-        catchError((Error: any) => {
-          this._user.set(null);
-          this._token.set(null);
-          this._authStatus.set('not-authenticated');
-          return of(false);
-        }),
+        map((resp) => this.handleAuthSuccess(resp)),
+        catchError((Error: any) => this.handleAuthError(Error)),
       );
+  }
+
+  logout(): void {
+    this._user.set(null);
+    this._token.set(null);
+    this._authStatus.set('not-authenticated');
+    localStorage.removeItem('token');
+  }
+
+  private handleAuthSuccess({ token, user }: AuthResponse): boolean {
+    this._user.set(user);
+    this._authStatus.set('authenticated');
+    this._token.set(token);
+
+    localStorage.setItem('token', token);
+
+    return true;
+  }
+
+  private handleAuthError(error: any): Observable<boolean> {
+    this.logout();
+    return of(false);
   }
 }
