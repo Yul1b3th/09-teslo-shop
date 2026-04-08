@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 
 @Component({
@@ -11,6 +11,7 @@ import { AuthService } from '@auth/services/auth.service';
 export default class LoginPage {
   fb: FormBuilder = inject(FormBuilder);
   authService = inject(AuthService);
+  router = inject(Router);
   hasError = signal(false);
   isPosting = signal(false);
 
@@ -24,14 +25,21 @@ export default class LoginPage {
   onSubmit() {
     if (this.loginForm.invalid) {
       this.hasError.set(true);
-      setTimeout(() => this.hasError.set(false), 2000); // Ocultar el error después de 3 segundos
+      setTimeout(() => this.hasError.set(false), 3000); // Ocultar el error después de 3 segundos
       return;
     }
 
     const { email = '', password = '' } = this.loginForm.value;
 
-    this.authService.login(email!, password!).subscribe((resp) => {
-      console.log(resp);
+    this.authService.login(email!, password!).subscribe((isAuthenticated) => {
+      if (isAuthenticated) {
+        // Redirigir a la página principal o dashboard después del login exitoso
+        this.router.navigateByUrl('/');
+        return;
+      }
+
+      this.hasError.set(true);
+      setTimeout(() => this.hasError.set(false), 3000); // Ocultar el error después de 3 segundos
     });
   }
 }
