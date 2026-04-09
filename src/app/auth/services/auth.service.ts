@@ -16,7 +16,7 @@ export class AuthService {
   private _authStatus = signal<AuthStatus>('checking');
   // al inicio cuando el servicio se inicialice va a ser null porque no tenemos a ese usuario, es algo que es temporal o esta en memoria
   private _user = signal<User | null>(null);
-  private _token = signal<string | null>(null);
+  private _token = signal<string | null>(localStorage.getItem('token'));
 
   private http = inject(HttpClient);
 
