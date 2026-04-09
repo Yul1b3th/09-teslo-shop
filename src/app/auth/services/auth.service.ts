@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, delay, map, Observable, of, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { User } from '@auth/interfaces/user.interface';
@@ -44,9 +44,28 @@ export class AuthService {
         password,
       })
       .pipe(
+        delay(8000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
           console.log('Valor del map en login:', result);
+          return result;
+        }),
+        catchError((Error: any) => this.handleAuthError(Error)),
+      );
+  }
+
+  register(email: string, password: string, fullName: string): Observable<boolean> {
+    return this.http
+      .post<AuthResponse>(`${baseUrl}/auth/register`, {
+        email,
+        password,
+        fullName,
+      })
+      .pipe(
+        delay(8000), // TODO Eliminar en Producción
+        map((resp) => {
+          const result = this.handleAuthSuccess(resp);
+          console.log('Valor del map en register:', result);
           return result;
         }),
         catchError((Error: any) => this.handleAuthError(Error)),
@@ -78,8 +97,7 @@ export class AuthService {
     this._token.set(null);
     this._authStatus.set('not-authenticated');
 
-    // TODO: revertir
-    // localStorage.removeItem('token');
+    localStorage.removeItem('token');
   }
 
   private handleAuthSuccess({ token, user }: AuthResponse): boolean {

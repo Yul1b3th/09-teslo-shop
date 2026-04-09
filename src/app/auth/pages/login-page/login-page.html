@@ -32,7 +32,13 @@
     <input type="password" class="grow" placeholder="Contraseña" formControlName="password" />
   </label>
 
-  <button type="submit" class="btn btn-secondary">Login</button>
+  <button type="submit" class="btn btn-secondary" [disabled]="isPosting()">
+    @if (isPosting()) {
+      Ingresando...
+    } @else {
+      Login
+    }
+  </button>
 
   <p class="text-slate-700">
     ¿No tienes cuenta?
