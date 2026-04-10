@@ -56,4 +56,14 @@ export class ProductsService {
       .get<Product>(`${baseUrl}/products/${idSlug}`)
       .pipe(tap((product) => this.productCache.set(idSlug, product))); // Guardo el producto en el cache
   }
+
+  getProductById(id: string): Observable<Product> {
+    // Verifico si el producto ya está en el cache
+    if (this.productCache.has(id)) {
+      return of(this.productCache.get(id)!);
+    }
+    return this.http
+      .get<Product>(`${baseUrl}/products/${id}`)
+      .pipe(tap((product) => this.productCache.set(id, product))); // Guardo el producto en el cache
+  }
 }
