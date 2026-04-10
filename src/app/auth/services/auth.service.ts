@@ -34,6 +34,7 @@ export class AuthService {
   });
 
   user = computed<User | null>(() => this._user());
+  isAdmin = computed(() => this._user()?.roles.includes('admin') ?? false);
 
   token = computed<string | null>(() => this._token());
 
@@ -79,6 +80,14 @@ export class AuthService {
       this.logout();
       return of(false);
     }
+
+    console.log(this._authStatus());
+
+    // TODO probar
+    // ✅ Si ya sabemos el estado, no llamamos al backend
+    // if (this._authStatus() !== 'checking') {
+    //   return of(this._authStatus() === 'authenticated');
+    // }
 
     return this.http
       .get<AuthResponse>(`${baseUrl}/auth/check-status`, {
