@@ -83,22 +83,15 @@ export class AuthService {
 
     console.log(this._authStatus());
 
-    // TODO probar
-    // ✅ Si ya sabemos el estado, no llamamos al backend
-    // if (this._authStatus() !== 'checking') {
-    //   return of(this._authStatus() === 'authenticated');
-    // }
+    // Evitar más llamadas si ya está autenticado
+    if (this._authStatus() !== 'checking') {
+      return of(this._authStatus() === 'authenticated');
+    }
 
-    return this.http
-      .get<AuthResponse>(`${baseUrl}/auth/check-status`, {
-        // headers: {
-        //   Authorization: `Bearer ${token}`,
-        // },
-      })
-      .pipe(
-        map((resp) => this.handleAuthSuccess(resp)),
-        catchError((Error: any) => this.handleAuthError(Error)),
-      );
+    return this.http.get<AuthResponse>(`${baseUrl}/auth/check-status`).pipe(
+      map((resp) => this.handleAuthSuccess(resp)),
+      catchError((Error: any) => this.handleAuthError(Error)),
+    );
   }
 
   logout(): void {
