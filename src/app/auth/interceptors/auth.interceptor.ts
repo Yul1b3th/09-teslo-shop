@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { AuthService } from '@auth/services/auth.service';
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn) {
-  // Lee del signal, pero si es null usa localStorage directamente
+  // Si el signal es null en ese microsegundo, lee del localStorage
   const authService = inject(AuthService);
   const token = authService.token() ?? localStorage.getItem('token');
 

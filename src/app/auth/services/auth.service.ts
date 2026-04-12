@@ -81,9 +81,7 @@ export class AuthService {
       return of(false);
     }
 
-    console.log(this._authStatus());
-
-    // Evitar más llamadas si ya está autenticado
+    // Si ya sabemos el estado, no llamamos al backend
     if (this._authStatus() !== 'checking') {
       return of(this._authStatus() === 'authenticated');
     }

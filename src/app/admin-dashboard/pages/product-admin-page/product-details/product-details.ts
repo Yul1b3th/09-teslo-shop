@@ -1,7 +1,8 @@
 import { Component, inject, input, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Product } from '@products/interfaces/product.interface';
 import { ProductCarousel } from '@products/components/product-carousel/product-carousel';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ProductsService } from '@products/services/products.service';
 import { FormUtils } from '@utils/form-utils';
 import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
 
@@ -12,6 +13,7 @@ import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
 })
 export class ProductDetails implements OnInit {
   fb = inject(FormBuilder);
+  productsService = inject(ProductsService);
 
   product = input.required<Product>();
 
@@ -36,7 +38,7 @@ export class ProductDetails implements OnInit {
   setFormValue(formLike: Partial<Product>) {
     // this.productForm.patchValue(formLike as any);
     this.productForm.reset(this.product() as any); // Mejor el reset para que el formulario sea pristine
-    this.productForm.patchValue({ tags: formLike.tags?.join(',') });
+    this.productForm.patchValue({ tags: formLike.tags?.join(',') }); // Convertir el array de tags a un string separado por comas
   }
 
   onSizeClicked(size: string) {
@@ -53,6 +55,21 @@ export class ProductDetails implements OnInit {
 
   onSubmit() {
     const isValid = this.productForm.valid;
-    console.log(this.productForm.value, { isValid });
+    this.productForm.markAllAsTouched();
+
+    if (!isValid) return;
+
+    const formValue = this.productForm.value;
+
+    const productLike: Partial<Product> = {
+      ...(formValue as any),
+      tags:
+        formValue.tags
+          ?.toLowerCase()
+          .split(',')
+          .map((tag: string) => tag.trim()) ?? [],
+    };
+
+    this.productsService.updateProduct(productLike);
   }
 }
