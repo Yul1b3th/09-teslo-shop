@@ -39,7 +39,18 @@ export class ProductCarousel implements AfterViewInit, OnChanges {
     if (!this.swiper) return;
 
     this.swiper.destroy(true, true); // Destruye la instancia actual de Swiper y elimina los estilos en línea
-    this.swiperInit(); // Vuelve a inicializar Swiper con las nuevas imágenes
+
+    const paginationEl: HTMLDivElement =
+      this.swiperDiv().nativeElement?.querySelector('.swiper-pagination');
+    // console.log(paginationEl);
+
+    paginationEl.innerHTML = ''; // Limpia el contenido de la paginación para evitar duplicados
+    // console.log(paginationEl);
+
+    setTimeout(() => {
+      this.swiperInit(); // Vuelve a inicializar Swiper con las nuevas imágenes
+      // console.log(paginationEl);
+    });
   }
 
   ngAfterViewInit(): void {
