@@ -5,6 +5,7 @@ import { ProductCarousel } from '@products/components/product-carousel/product-c
 import { ProductsService } from '@products/services/products.service';
 import { FormUtils } from '@utils/form-utils';
 import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'product-details',
@@ -13,6 +14,7 @@ import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
 })
 export class ProductDetails implements OnInit {
   fb = inject(FormBuilder);
+  router = inject(Router);
   productsService = inject(ProductsService);
 
   product = input.required<Product>();
@@ -29,7 +31,7 @@ export class ProductDetails implements OnInit {
     gender: ['men', [Validators.required, Validators.pattern(/men|women|kid|unisex/)]],
   });
 
-  sizes = ['XS', 'S', 'M', 'L', 'XL'];
+  sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   ngOnInit(): void {
     this.setFormValue(this.product());
@@ -70,8 +72,15 @@ export class ProductDetails implements OnInit {
           .map((tag: string) => tag.trim()) ?? [],
     };
 
-    this.productsService.updateProduct(this.product().id, productLike).subscribe((producto) => {
-      console.log('Producto actualizado:', producto);
-    });
+    if (this.product().id === 'new') {
+      this.productsService.createProduct(productLike).subscribe((producto) => {
+        console.log('Producto creado:', producto);
+        this.router.navigate(['/admin/products', producto.id]); // Navegar a la página de detalles del producto recién creado
+      });
+    } else {
+      this.productsService.updateProduct(this.product().id, productLike).subscribe((producto) => {
+        console.log('Producto actualizado:', producto);
+      });
+    }
   }
 }
