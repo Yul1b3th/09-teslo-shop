@@ -1,4 +1,4 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -37,6 +37,11 @@ export class ProductDetails implements OnInit {
   wasSaved = signal<boolean>(false);
   imageFiles: FileList | undefined = undefined;
   tempImages = signal<string[]>([]);
+
+  imagesToCarousel = computed(() => {
+    const currentProductImages = [...this.product().images, ...this.tempImages()];
+    return currentProductImages;
+  });
 
   ngOnInit(): void {
     this.setFormValue(this.product());
