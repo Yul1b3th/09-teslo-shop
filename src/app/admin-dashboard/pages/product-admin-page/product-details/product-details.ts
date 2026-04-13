@@ -35,6 +35,8 @@ export class ProductDetails implements OnInit {
   sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   wasSaved = signal<boolean>(false);
+  imageFiles: FileList | undefined = undefined;
+  tempImages = signal<string[]>([]);
 
   ngOnInit(): void {
     this.setFormValue(this.product());
@@ -89,5 +91,18 @@ export class ProductDetails implements OnInit {
     setTimeout(() => {
       this.wasSaved.set(false);
     }, 3000);
+  }
+
+  // Images
+  onFilesChanged(event: Event) {
+    const filesList = (event.target as HTMLInputElement).files;
+
+    this.imageFiles = filesList ?? undefined;
+
+    // Convierte filesList en un array real y por cada archivo genera una URL temporal del navegador.
+    // El resultado es un array de URLs guardado en imageUrls.
+    const imageUrls = Array.from(filesList ?? []).map((file) => URL.createObjectURL(file));
+
+    this.tempImages.set(imageUrls);
   }
 }

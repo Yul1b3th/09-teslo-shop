@@ -45,7 +45,7 @@ export class AuthService {
         password,
       })
       .pipe(
-        delay(8000), // TODO Eliminar en Producción
+        delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
           console.log('Valor del map en login:', result);
@@ -63,7 +63,7 @@ export class AuthService {
         fullName,
       })
       .pipe(
-        delay(8000), // TODO Eliminar en Producción
+        delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
           console.log('Valor del map en register:', result);
@@ -111,6 +111,7 @@ export class AuthService {
   }
 
   private handleAuthError(error: any): Observable<boolean> {
+    console.log(error);
     this.logout();
     return of(false);
   }
