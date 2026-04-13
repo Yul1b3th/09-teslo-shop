@@ -1,11 +1,12 @@
-import { Component, inject, input, OnInit } from '@angular/core';
+import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { Product } from '@products/interfaces/product.interface';
 import { ProductCarousel } from '@products/components/product-carousel/product-carousel';
 import { ProductsService } from '@products/services/products.service';
 import { FormUtils } from '@utils/form-utils';
 import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'product-details',
@@ -33,6 +34,8 @@ export class ProductDetails implements OnInit {
 
   sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
+  wasSaved = signal<boolean>(false);
+
   ngOnInit(): void {
     this.setFormValue(this.product());
   }
@@ -55,7 +58,7 @@ export class ProductDetails implements OnInit {
     this.productForm.patchValue({ sizes: currentSizes });
   }
 
-  onSubmit() {
+  async onSubmit() {
     const isValid = this.productForm.valid;
     this.productForm.markAllAsTouched();
 
@@ -73,14 +76,18 @@ export class ProductDetails implements OnInit {
     };
 
     if (this.product().id === 'new') {
-      this.productsService.createProduct(productLike).subscribe((producto) => {
-        console.log('Producto creado:', producto);
-        this.router.navigate(['/admin/products', producto.id]); // Navegar a la página de detalles del producto recién creado
-      });
+      // Crear producto
+      const product = await firstValueFrom(this.productsService.createProduct(productLike));
+      this.router.navigate(['/admin/products', product.id]); // Navegar a la página de detalles del producto recién creado;
     } else {
-      this.productsService.updateProduct(this.product().id, productLike).subscribe((producto) => {
-        console.log('Producto actualizado:', producto);
-      });
+      await firstValueFrom(this.productsService.updateProduct(this.product().id, productLike));
     }
+    // Falta poner el catch para manejar el error
+
+    this.wasSaved.set(true);
+
+    setTimeout(() => {
+      this.wasSaved.set(false);
+    }, 3000);
   }
 }
