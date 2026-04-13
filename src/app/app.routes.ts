@@ -15,6 +15,10 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'admin',
+    loadChildren: () => import('./admin-dashboard/admin-dashboard.route'),
+  },
+  {
     path: '',
     // loadchildren para cargar de manera perezosa la ruta store-front.routes
     loadChildren: () => import('./store-front/store-front.routes'),
