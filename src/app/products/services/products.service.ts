@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { User } from '@auth/interfaces/user.interface';
 import { Gender, Product, ProductsResponse } from '@products/interfaces/product.interface';
-import { Observable, of, tap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 const baseUrl = environment.baseUrl;
@@ -109,5 +109,34 @@ export class ProductsService {
     });
 
     console.log('Caché actualizado');
+  }
+
+  // Tome un fileList y lo suba
+  // Subir varias imágenes
+  uploadImages(images?: FileList): Observable<(string | { error: boolean; fileName: string })[]> {
+    if (!images) return of([]);
+
+    // Estamos creando un array de observables y tareas de carga para esperar después que todas terminen para indicar que siga con el siguiente paso
+    const uploadObservables = Array.from(images).map((imageFile) =>
+      this.uploadImage(imageFile).pipe(
+        catchError((err) => of({ error: true, fileName: imageFile.name })),
+      ),
+    );
+
+    return forkJoin(uploadObservables).pipe(tap((imageNames) => console.log({ imageNames })));
+  }
+
+  // Subir una sola imagen
+  uploadImage(imageFile: File): Observable<string> {
+    if (!imageFile) return of('');
+
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    return this.http.post<{ fileName: string }>(`${baseUrl}/files/product`, formData).pipe(
+      tap((resp) => console.log(resp)),
+      map((resp) => resp.fileName),
+      tap((resp) => console.log(resp)),
+    );
   }
 }
