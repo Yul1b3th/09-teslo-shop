@@ -35,7 +35,7 @@ export class ProductDetails implements OnInit {
   sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   wasSaved = signal<boolean>(false);
-  imageFiles: FileList | undefined = undefined;
+  imageFileList: FileList | undefined = undefined;
   tempImages = signal<string[]>([]);
 
   imagesToCarousel = computed(() => {
@@ -84,10 +84,18 @@ export class ProductDetails implements OnInit {
 
     if (this.product().id === 'new') {
       // Crear producto
-      const product = await firstValueFrom(this.productsService.createProduct(productLike));
+      // con await firstValueFrom esperamos a tener el producto,
+      // y que ese producto se cree this.productsService.createProduct(productLike) y se continúa la ejecución
+      const product = await firstValueFrom(
+        this.productsService.createProduct(productLike, this.imageFileList),
+      );
+
+      // esperamos a la creación del producto para redirigir al usuario al producto recién creado
       this.router.navigate(['/admin/products', product.id]); // Navegar a la página de detalles del producto recién creado;
     } else {
-      await firstValueFrom(this.productsService.updateProduct(this.product().id, productLike));
+      await firstValueFrom(
+        this.productsService.updateProduct(this.product().id, productLike, this.imageFileList),
+      );
     }
     // Falta poner el catch para manejar el error
 
@@ -102,7 +110,7 @@ export class ProductDetails implements OnInit {
   onFilesChanged(event: Event) {
     const filesList = (event.target as HTMLInputElement).files;
 
-    this.imageFiles = filesList ?? undefined;
+    this.imageFileList = filesList ?? undefined;
 
     // Convierte filesList en un array real y por cada archivo genera una URL temporal del navegador.
     // El resultado es un array de URLs guardado en imageUrls.

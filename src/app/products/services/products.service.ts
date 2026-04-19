@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { User } from '@auth/interfaces/user.interface';
 import { Gender, Product, ProductsResponse } from '@products/interfaces/product.interface';
-import { catchError, forkJoin, map, Observable, of, tap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 const baseUrl = environment.baseUrl;
@@ -86,13 +86,28 @@ export class ProductsService {
       .pipe(tap((product) => this.productCache.set(id, product))); // Guardo el producto en el cache
   }
 
-  updateProduct(id: string, productLike: Partial<Product>): Observable<Product> {
-    return this.http
-      .patch<Product>(`${baseUrl}/products/${id}`, productLike)
-      .pipe(tap((product) => this.updateProductCache(product)));
+  updateProduct(
+    id: string,
+    productLike: Partial<Product>,
+    imageFileList?: FileList,
+  ): Observable<Product> {
+    const currentImages = productLike.images ?? [];
+
+    // imageNames es el producto de uploadImages
+    return this.uploadImages(imageFileList).pipe(
+      map((imageNames) => ({
+        ...productLike,
+        images: [...currentImages, ...imageNames],
+      })),
+      tap((product) => console.log(product)),
+      switchMap((updatedProduct) =>
+        this.http.patch<Product>(`${baseUrl}/products/${id}`, updatedProduct),
+      ),
+      tap((product) => this.updateProductCache(product)),
+    );
   }
 
-  createProduct(productLike: Partial<Product>): Observable<Product> {
+  createProduct(productLike: Partial<Product>, imageFileList?: FileList): Observable<Product> {
     return this.http
       .post<Product>(`${baseUrl}/products`, productLike)
       .pipe(tap((product) => this.updateProductCache(product)));
@@ -113,15 +128,11 @@ export class ProductsService {
 
   // Tome un fileList y lo suba
   // Subir varias imágenes
-  uploadImages(images?: FileList): Observable<(string | { error: boolean; fileName: string })[]> {
+  uploadImages(images?: FileList): Observable<string[]> {
     if (!images) return of([]);
 
     // Estamos creando un array de observables y tareas de carga para esperar después que todas terminen para indicar que siga con el siguiente paso
-    const uploadObservables = Array.from(images).map((imageFile) =>
-      this.uploadImage(imageFile).pipe(
-        catchError((err) => of({ error: true, fileName: imageFile.name })),
-      ),
-    );
+    const uploadObservables = Array.from(images).map((imageFile) => this.uploadImage(imageFile));
 
     return forkJoin(uploadObservables).pipe(tap((imageNames) => console.log({ imageNames })));
   }
