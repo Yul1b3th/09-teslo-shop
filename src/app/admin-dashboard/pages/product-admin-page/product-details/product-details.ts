@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { Product } from '@products/interfaces/product.interface';
 import { ProductCarousel } from '@products/components/product-carousel/product-carousel';
@@ -16,6 +16,7 @@ import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
 export class ProductDetails implements OnInit {
   fb = inject(FormBuilder);
   router = inject(Router);
+  activatedRoute = inject(ActivatedRoute);
   productsService = inject(ProductsService);
 
   product = input.required<Product>();
@@ -44,6 +45,11 @@ export class ProductDetails implements OnInit {
   });
 
   ngOnInit(): void {
+    // Limpiar estados locales cuando el componente se inicializa
+    // Esto se ejecuta también después del reload en actualizaciones
+    this.tempImages.set([]);
+    this.imageFileList = undefined;
+
     this.setFormValue(this.product());
   }
 
@@ -66,6 +72,7 @@ export class ProductDetails implements OnInit {
   }
 
   async onSubmit() {
+    // Validar que el formulario sea válido
     const isValid = this.productForm.valid;
     this.productForm.markAllAsTouched();
 
@@ -73,6 +80,7 @@ export class ProductDetails implements OnInit {
 
     const formValue = this.productForm.value;
 
+    // Preparar el objeto del producto con los datos del formulario
     const productLike: Partial<Product> = {
       ...(formValue as any),
       tags:
@@ -82,28 +90,48 @@ export class ProductDetails implements OnInit {
           .map((tag: string) => tag.trim()) ?? [],
     };
 
-    if (this.product().id === 'new') {
-      // Crear producto
-      // con await firstValueFrom esperamos a tener el producto,
-      // y que ese producto se cree this.productsService.createProduct(productLike) y se continúa la ejecución
-      const product = await firstValueFrom(
-        this.productsService.createProduct(productLike, this.imageFileList),
-      );
+    try {
+      if (this.product().id === 'new') {
+        // Crear producto
+        // Con await firstValueFrom esperamos a tener el producto,
+        // y que ese producto se cree con this.productsService.createProduct(productLike) y se continúa la ejecución
+        const product = await firstValueFrom(
+          this.productsService.createProduct(productLike, this.imageFileList),
+        );
 
-      // esperamos a la creación del producto para redirigir al usuario al producto recién creado
-      this.router.navigate(['/admin/products', product.id]); // Navegar a la página de detalles del producto recién creado;
-    } else {
-      await firstValueFrom(
-        this.productsService.updateProduct(this.product().id, productLike, this.imageFileList),
-      );
+        // Esperamos a la creación del producto para redirigir al usuario al producto recién creado
+        this.router.navigate(['/admin/products', product.id]);
+
+        // Limpiar estados locales después de la creación
+        this.tempImages.set([]);
+        this.imageFileList = undefined;
+      } else {
+        // Actualizar producto existente
+        // Esperamos a que la actualización termine antes de continuar
+        await firstValueFrom(
+          this.productsService.updateProduct(this.product().id, productLike, this.imageFileList),
+        );
+
+        // Recargar el componente para que el input se actualice con las nuevas imágenes
+        await this.router.navigate([], {
+          relativeTo: this.activatedRoute,
+          queryParamsHandling: 'preserve',
+          onSameUrlNavigation: 'reload',
+        });
+      }
+
+      // Mostrar mensaje de éxito
+      this.wasSaved.set(true);
+
+      // Ocultar el mensaje después de 3 segundos
+      setTimeout(() => {
+        this.wasSaved.set(false);
+      }, 3000);
+    } catch (error) {
+      // Manejar el error en caso de que falle la creación o actualización
+      console.error('Error al guardar el producto:', error);
+      // TODO: Mostrar un mensaje de error al usuario
     }
-    // Falta poner el catch para manejar el error
-
-    this.wasSaved.set(true);
-
-    setTimeout(() => {
-      this.wasSaved.set(false);
-    }, 3000);
   }
 
   // Images

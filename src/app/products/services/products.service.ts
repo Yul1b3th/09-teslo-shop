@@ -108,9 +108,20 @@ export class ProductsService {
   }
 
   createProduct(productLike: Partial<Product>, imageFileList?: FileList): Observable<Product> {
-    return this.http
-      .post<Product>(`${baseUrl}/products`, productLike)
-      .pipe(tap((product) => this.updateProductCache(product)));
+    // 1. Subir las imágenes
+    return this.uploadImages(imageFileList).pipe(
+      // 2. Preparar el objeto del producto con los nombres de las imágenes subidas
+      map((imageNames) => ({
+        ...productLike,
+        images: imageNames,
+      })),
+      // 3. Enviar el POST al servidor
+      switchMap((newProduct) => {
+        return this.http.post<Product>(`${baseUrl}/products`, newProduct);
+      }),
+      // 4. Actualizar el caché local con la respuesta del servidor
+      tap((product) => this.updateProductCache(product)),
+    );
   }
 
   updateProductCache(product: Product) {
