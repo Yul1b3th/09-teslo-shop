@@ -14,14 +14,27 @@ import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
   templateUrl: './product-details.html',
 })
 export class ProductDetails implements OnInit {
-  fb = inject(FormBuilder);
-  router = inject(Router);
-  activatedRoute = inject(ActivatedRoute);
-  productsService = inject(ProductsService);
+  // --- Inyecciones de dependencias ---
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly productsService = inject(ProductsService);
 
-  product = input.required<Product>();
+  // --- Inputs ---
+  public readonly product = input.required<Product>();
 
-  productForm = this.fb.group({
+  // --- Signals mutables ---
+  public wasSaved = signal<boolean>(false);
+  public tempImages = signal<string[]>([]);
+
+  // --- Computed signals ---
+  public readonly imagesToCarousel = computed(() => {
+    const currentProductImages = [...this.product().images, ...this.tempImages()];
+    return currentProductImages;
+  });
+
+  // --- Form controls ---
+  public readonly productForm = this.fb.group({
     title: ['', Validators.required],
     description: ['', Validators.required],
     slug: ['', [Validators.required, Validators.pattern(FormUtils.slugPattern)]],
@@ -29,21 +42,17 @@ export class ProductDetails implements OnInit {
     stock: [0, [Validators.required, Validators.min(0)]],
     sizes: [['']],
     images: [[]],
-    tags: [''], // es un string, se puede guardar con comas, en la base de datos es un objeto
+    tags: [''],
     gender: ['men', [Validators.required, Validators.pattern(/men|women|kid|unisex/)]],
   });
 
-  sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  // --- Propiedades públicas ---
+  public readonly sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-  wasSaved = signal<boolean>(false);
-  imageFileList: FileList | undefined = undefined;
-  tempImages = signal<string[]>([]);
+  // --- Propiedades privadas ---
+  private imageFileList: FileList | undefined = undefined;
 
-  imagesToCarousel = computed(() => {
-    const currentProductImages = [...this.product().images, ...this.tempImages()];
-    return currentProductImages;
-  });
-
+  // ===== Lifecycle hooks ===================================================
   ngOnInit(): void {
     // Limpiar estados locales cuando el componente se inicializa
     // Esto se ejecuta también después del reload en actualizaciones
@@ -53,13 +62,8 @@ export class ProductDetails implements OnInit {
     this.setFormValue(this.product());
   }
 
-  setFormValue(formLike: Partial<Product>) {
-    // this.productForm.patchValue(formLike as any);
-    this.productForm.reset(this.product() as any); // Mejor el reset para que el formulario sea pristine
-    this.productForm.patchValue({ tags: formLike.tags?.join(',') }); // Convertir el array de tags a un string separado por comas
-  }
-
-  onSizeClicked(size: string) {
+  // ===== Métodos públicos ===================================================
+  public onSizeClicked(size: string): void {
     const currentSizes = this.productForm.value.sizes ?? [];
 
     if (currentSizes.includes(size)) {
@@ -71,7 +75,7 @@ export class ProductDetails implements OnInit {
     this.productForm.patchValue({ sizes: currentSizes });
   }
 
-  async onSubmit() {
+  public async onSubmit(): Promise<void> {
     // Validar que el formulario sea válido
     const isValid = this.productForm.valid;
     this.productForm.markAllAsTouched();
@@ -135,7 +139,7 @@ export class ProductDetails implements OnInit {
   }
 
   // Images
-  onFilesChanged(event: Event) {
+  public onFilesChanged(event: Event): void {
     const filesList = (event.target as HTMLInputElement).files;
 
     this.imageFileList = filesList ?? undefined;
@@ -145,5 +149,12 @@ export class ProductDetails implements OnInit {
     const imageUrls = Array.from(filesList ?? []).map((file) => URL.createObjectURL(file));
 
     this.tempImages.set(imageUrls);
+  }
+
+  // ===== Métodos privados ===================================================
+  private setFormValue(formLike: Partial<Product>): void {
+    // this.productForm.patchValue(formLike as any);
+    this.productForm.reset(this.product() as any); // Mejor el reset para que el formulario sea pristine
+    this.productForm.patchValue({ tags: formLike.tags?.join(',') }); // Convertir el array de tags a un string separado por comas
   }
 }
