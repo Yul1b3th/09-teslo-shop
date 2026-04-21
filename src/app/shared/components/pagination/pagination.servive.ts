@@ -7,6 +7,7 @@ import { map } from 'rxjs';
 export class PaginationService {
   private readonly activatedRoute = inject(ActivatedRoute);
 
+  // Va a estar dando cuál es el valor basado en la URL
   currentPage = toSignal(
     this.activatedRoute.queryParamMap.pipe(
       map((params) => (params.get('page') ? +params.get('page')! : 1)),
