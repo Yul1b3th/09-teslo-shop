@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { User } from '@auth/interfaces/user.interface';
 import { Gender, Product, ProductsResponse } from '@products/interfaces/product.interface';
-import { Observable, of, tap } from 'rxjs';
+import { catchError, forkJoin, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 const baseUrl = environment.baseUrl;
@@ -55,9 +55,9 @@ export class ProductsService {
         },
       })
       .pipe(
-        tap((resp) => console.log(resp)),
+        // tap((resp) => console.log(resp)),
         tap((resp) => this.productsCache.set(key, resp)), // Guardo la respuesta en el cache
-        tap((resp) => console.log(this.productsCache.entries())),
+        // tap((resp) => console.log(this.productsCache.entries())),
       );
   }
 
@@ -86,16 +86,46 @@ export class ProductsService {
       .pipe(tap((product) => this.productCache.set(id, product))); // Guardo el producto en el cache
   }
 
-  updateProduct(id: string, productLike: Partial<Product>): Observable<Product> {
-    return this.http
-      .patch<Product>(`${baseUrl}/products/${id}`, productLike)
-      .pipe(tap((product) => this.updateProductCache(product)));
+  updateProduct(
+    id: string,
+    productLike: Partial<Product>,
+    imageFileList?: FileList,
+  ): Observable<Product> {
+    const currentImages = productLike.images ?? [];
+
+    // imageNames es el producto de uploadImages
+    // Ejecutamos Observables en secuencia,
+    // primero subimos las imágenes,
+    // map - después preparamos el producto actualizado con los nombres de las imágenes subidas,
+    // switchMap - y por último hacemos el PATCH al servidor para actualizar el producto
+    return this.uploadImages(imageFileList).pipe(
+      map((imageNames) => ({
+        ...productLike,
+        images: [...currentImages, ...imageNames],
+      })),
+      // tap((product) => console.log(product)),
+      switchMap((updatedProduct) =>
+        this.http.patch<Product>(`${baseUrl}/products/${id}`, updatedProduct),
+      ),
+      tap((product) => this.updateProductCache(product)),
+    );
   }
 
-  createProduct(productLike: Partial<Product>): Observable<Product> {
-    return this.http
-      .post<Product>(`${baseUrl}/products`, productLike)
-      .pipe(tap((product) => this.updateProductCache(product)));
+  createProduct(productLike: Partial<Product>, imageFileList?: FileList): Observable<Product> {
+    // 1. Subir las imágenes
+    return this.uploadImages(imageFileList).pipe(
+      // 2. Preparar el objeto del producto con los nombres de las imágenes subidas
+      map((imageNames) => ({
+        ...productLike,
+        images: imageNames,
+      })),
+      // 3. Enviar el POST al servidor
+      switchMap((newProduct) => {
+        return this.http.post<Product>(`${baseUrl}/products`, newProduct);
+      }),
+      // 4. Actualizar el caché local con la respuesta del servidor
+      tap((product) => this.updateProductCache(product)),
+    );
   }
 
   updateProductCache(product: Product) {
@@ -109,5 +139,31 @@ export class ProductsService {
     });
 
     console.log('Caché actualizado');
+  }
+
+  // Tome un fileList y lo suba
+  // Subir varias imágenes
+  uploadImages(images?: FileList): Observable<string[]> {
+    if (!images) return of([]);
+
+    // Estamos creando un array de observables y tareas de carga para esperar después que todas terminen para indicar que siga con el siguiente paso
+    const uploadObservables = Array.from(images).map((imageFile) => this.uploadImage(imageFile));
+
+    // return forkJoin(uploadObservables).pipe(tap((imageNames) => console.log({ imageNames })));
+    return forkJoin(uploadObservables);
+  }
+
+  // Subir una sola imagen
+  uploadImage(imageFile: File): Observable<string> {
+    if (!imageFile) return of('');
+
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    return this.http.post<{ fileName: string }>(`${baseUrl}/files/product`, formData).pipe(
+      // tap((resp) => console.log(resp)),
+      map((resp) => resp.fileName),
+      // tap((resp) => console.log(resp)),
+    );
   }
 }
