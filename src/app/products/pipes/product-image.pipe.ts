@@ -7,7 +7,7 @@ const baseUrl = environment.baseUrl;
 })
 export class ProductImagePipe implements PipeTransform {
   transform(value: null | string | string[]): string {
-    console.log(value);
+    // console.log(value);
 
     if (value === null) {
       return './assets/images/no-image.jpg';

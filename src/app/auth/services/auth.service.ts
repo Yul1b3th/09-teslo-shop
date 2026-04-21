@@ -48,7 +48,7 @@ export class AuthService {
         delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
-          console.log('Valor del map en login:', result);
+          // console.log('Valor del map en login:', result);
           return result;
         }),
         catchError((Error: any) => this.handleAuthError(Error)),
@@ -66,7 +66,7 @@ export class AuthService {
         delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
-          console.log('Valor del map en register:', result);
+          // console.log('Valor del map en register:', result);
           return result;
         }),
         catchError((Error: any) => this.handleAuthError(Error)),

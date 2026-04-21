@@ -55,9 +55,9 @@ export class ProductsService {
         },
       })
       .pipe(
-        tap((resp) => console.log(resp)),
+        // tap((resp) => console.log(resp)),
         tap((resp) => this.productsCache.set(key, resp)), // Guardo la respuesta en el cache
-        tap((resp) => console.log(this.productsCache.entries())),
+        // tap((resp) => console.log(this.productsCache.entries())),
       );
   }
 
@@ -94,12 +94,16 @@ export class ProductsService {
     const currentImages = productLike.images ?? [];
 
     // imageNames es el producto de uploadImages
+    // Ejecutamos Observables en secuencia,
+    // primero subimos las imágenes,
+    // map - después preparamos el producto actualizado con los nombres de las imágenes subidas,
+    // switchMap - y por último hacemos el PATCH al servidor para actualizar el producto
     return this.uploadImages(imageFileList).pipe(
       map((imageNames) => ({
         ...productLike,
         images: [...currentImages, ...imageNames],
       })),
-      tap((product) => console.log(product)),
+      // tap((product) => console.log(product)),
       switchMap((updatedProduct) =>
         this.http.patch<Product>(`${baseUrl}/products/${id}`, updatedProduct),
       ),
@@ -145,7 +149,8 @@ export class ProductsService {
     // Estamos creando un array de observables y tareas de carga para esperar después que todas terminen para indicar que siga con el siguiente paso
     const uploadObservables = Array.from(images).map((imageFile) => this.uploadImage(imageFile));
 
-    return forkJoin(uploadObservables).pipe(tap((imageNames) => console.log({ imageNames })));
+    // return forkJoin(uploadObservables).pipe(tap((imageNames) => console.log({ imageNames })));
+    return forkJoin(uploadObservables);
   }
 
   // Subir una sola imagen
@@ -156,9 +161,9 @@ export class ProductsService {
     formData.append('file', imageFile);
 
     return this.http.post<{ fileName: string }>(`${baseUrl}/files/product`, formData).pipe(
-      tap((resp) => console.log(resp)),
+      // tap((resp) => console.log(resp)),
       map((resp) => resp.fileName),
-      tap((resp) => console.log(resp)),
+      // tap((resp) => console.log(resp)),
     );
   }
 }

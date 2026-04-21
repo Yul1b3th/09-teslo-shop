@@ -21,7 +21,14 @@ export class ProductDetails implements OnInit {
   private readonly productsService = inject(ProductsService);
 
   // --- Inputs ---
-  public readonly product = input.required<Product>();
+  public readonly productInput = input.required<Product>();
+
+  // Signal mutable que almacena el estado actual (puede diferir del input)
+  // Se actualiza SOLO después de un UPDATE exitoso del servidor
+  private readonly productMutable = signal<Product | null>(null);
+
+  // Computed que prioriza la versión mutable, fallback al input
+  public readonly product = computed(() => this.productMutable() ?? this.productInput());
 
   // --- Signals mutables ---
   public wasSaved = signal<boolean>(false);
@@ -54,11 +61,6 @@ export class ProductDetails implements OnInit {
 
   // ===== Lifecycle hooks ===================================================
   ngOnInit(): void {
-    // Limpiar estados locales cuando el componente se inicializa
-    // Esto se ejecuta también después del reload en actualizaciones
-    this.tempImages.set([]);
-    this.imageFileList = undefined;
-
     this.setFormValue(this.product());
   }
 
@@ -103,25 +105,23 @@ export class ProductDetails implements OnInit {
           this.productsService.createProduct(productLike, this.imageFileList),
         );
 
-        // Esperamos a la creación del producto para redirigir al usuario al producto recién creado
-        this.router.navigate(['/admin/products', product.id]);
-
         // Limpiar estados locales después de la creación
         this.tempImages.set([]);
         this.imageFileList = undefined;
+
+        // Esperamos a la creación del producto para redirigir al usuario al producto recién creado
+        this.router.navigate(['/admin/products', product.id]);
       } else {
         // Actualizar producto existente
         // Esperamos a que la actualización termine antes de continuar
-        await firstValueFrom(
+        const updatedProduct = await firstValueFrom(
           this.productsService.updateProduct(this.product().id, productLike, this.imageFileList),
         );
+        this.productMutable.set(updatedProduct);
 
-        // Recargar el componente para que el input se actualice con las nuevas imágenes
-        await this.router.navigate([], {
-          relativeTo: this.activatedRoute,
-          queryParamsHandling: 'preserve',
-          onSameUrlNavigation: 'reload',
-        });
+        // Limpiar estados locales después de la actualización
+        this.tempImages.set([]);
+        this.imageFileList = undefined;
       }
 
       // Mostrar mensaje de éxito
