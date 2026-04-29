@@ -5,10 +5,9 @@ import {
 } from '@angular/core';
 import { provideRouter, withHashLocation } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-
 import { routes } from './app.routes';
-import { loggingInterceptor } from '@shared/interceptors/login.interceptor';
-import { authInterceptor } from '@auth/interceptors/auth.interceptor';
+import { authInterceptor } from '@auth';
+import { loadingInterceptor } from '@core/loading';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +18,7 @@ export const appConfig: ApplicationConfig = {
       withFetch(),
       withInterceptors([
         // loggingInterceptor,
+        loadingInterceptor,
         authInterceptor,
       ]),
     ),

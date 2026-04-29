@@ -1,8 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
-import { ProductTable } from '@products/components/product-table/product-table';
-import { ProductsService } from '@products/services/products.service';
+import { ProductTable, ProductsService } from '@products';
 import { PaginationService } from '@shared/components/pagination/pagination.servive';
 import { Pagination } from '@shared/components/pagination/pagination';
 

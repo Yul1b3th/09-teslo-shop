@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { environment } from 'src/environments/environment';
+import { environment } from '@env/environment';
 
 const baseUrl = environment.baseUrl;
 @Pipe({

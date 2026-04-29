@@ -5,4 +5,4 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './not-found-page.html',
 })
-export class NotFoundPage { }
+export default class NotFoundPage {}

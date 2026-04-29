@@ -1,0 +1,35 @@
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+  @for (item of getSkeletonArray(); track item) {
+    <div class="card bg-base-100 shadow-sm">
+      <!-- Imagen skeleton -->
+      <figure class="relative h-64 bg-gray-200 overflow-hidden">
+        <div class="absolute inset-0 shimmer"></div>
+      </figure>
+
+      <!-- Contenido skeleton -->
+      <div class="card-body">
+        <!-- Título -->
+        <div class="relative h-6 bg-gray-200 rounded overflow-hidden mb-3">
+          <div class="absolute inset-0 shimmer"></div>
+        </div>
+
+        <!-- Descripción línea 1 -->
+        <div class="relative h-4 bg-gray-200 rounded overflow-hidden mb-2">
+          <div class="absolute inset-0 shimmer"></div>
+        </div>
+
+        <!-- Descripción línea 2 -->
+        <div class="relative h-4 bg-gray-200 rounded overflow-hidden w-5/6 mb-4">
+          <div class="absolute inset-0 shimmer"></div>
+        </div>
+
+        <!-- Botón -->
+        <div class="card-actions justify-end">
+          <div class="relative h-10 bg-gray-200 rounded w-32 overflow-hidden">
+            <div class="absolute inset-0 shimmer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
