@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { NotAuthenticatedGuard } from '@auth/guard/not-authenticated.guard';
+import { NotAuthenticatedGuard } from '@auth';
 
 export const routes: Routes = [
   // loadchildren para cargar de manera perezosa la ruta auth.routes

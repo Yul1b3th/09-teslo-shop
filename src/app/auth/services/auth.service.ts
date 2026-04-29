@@ -2,9 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, delay, map, Observable, of, tap } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { AuthResponse } from '@auth/interfaces/auth-response.interface';
-import { User } from '@auth/interfaces/user.interface';
+import type { AuthResponse, User } from '@auth';
+import { environment } from '@env/environment';
 
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated';
 const baseUrl = environment.baseUrl;
@@ -45,7 +44,7 @@ export class AuthService {
         password,
       })
       .pipe(
-        delay(3000), // TODO Eliminar en Producción
+        // delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
           // console.log('Valor del map en login:', result);
@@ -63,7 +62,7 @@ export class AuthService {
         fullName,
       })
       .pipe(
-        delay(3000), // TODO Eliminar en Producción
+        // delay(3000), // TODO Eliminar en Producción
         map((resp) => {
           const result = this.handleAuthSuccess(resp);
           // console.log('Valor del map en register:', result);

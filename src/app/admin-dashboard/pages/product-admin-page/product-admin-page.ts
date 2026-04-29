@@ -1,7 +1,7 @@
 import { Component, effect, inject } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductsService } from '@products/services/products.service';
+import { ProductsService } from '@products';
 import { map } from 'rxjs';
 import { ProductDetails } from './product-details/product-details';
 

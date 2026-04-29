@@ -9,7 +9,7 @@ import { ProductCarousel } from '@products/components/product-carousel/product-c
   imports: [ProductCarousel],
   templateUrl: './product-page.html',
 })
-export class ProductPage {
+export default class ProductPage {
   // Para tomar la ruta activa
   activateRoute = inject(ActivatedRoute);
   productsService = inject(ProductsService);

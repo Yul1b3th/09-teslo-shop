@@ -2,11 +2,9 @@ import { Component, computed, inject, input, OnInit, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { Product } from '@products/interfaces/product.interface';
-import { ProductCarousel } from '@products/components/product-carousel/product-carousel';
-import { ProductsService } from '@products/services/products.service';
-import { FormUtils } from '@utils/form-utils';
-import { FormErrorLabel } from '@shared/form-error-label/form-error-label';
+import { Product, ProductCarousel, ProductsService } from '@products';
+import { FormErrorLabel } from '@shared';
+import { FormUtils } from '@utils';
 
 @Component({
   selector: 'product-details',

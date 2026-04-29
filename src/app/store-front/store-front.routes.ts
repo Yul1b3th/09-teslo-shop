@@ -1,27 +1,26 @@
 import { Routes } from '@angular/router';
 import { StoreFrontLayout } from './layouts/store-front-layout';
-import { HomePage } from './pages/home-page/home-page';
-import { GenderPage } from './pages/gender-page/gender-page';
-import { ProductPage } from './pages/product-page/product-page';
-import { NotFoundPage } from './pages/not-found-page/not-found-page';
 
 export const storeFrontRoutes: Routes = [
   {
     path: '',
     component: StoreFrontLayout,
     children: [
-      { path: '', component: HomePage },
+      {
+        path: '',
+        loadComponent: () => import('./pages/home-page/home-page'),
+      },
       {
         path: 'gender/:gender',
-        component: GenderPage,
+        loadComponent: () => import('./pages/gender-page/gender-page'),
       },
       {
         path: 'product/:idSLug', // el slug es un URL friendly
-        component: ProductPage,
+        loadComponent: () => import('./pages/product-page/product-page'),
       },
       {
         path: '**',
-        component: NotFoundPage,
+        loadComponent: () => import('./pages/not-found-page/not-found-page'),
       },
     ],
   },

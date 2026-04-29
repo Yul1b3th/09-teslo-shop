@@ -2,27 +2,35 @@ import { Component, inject } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
-import { ProductsService } from '@products/services/products.service';
-import { ProductCard } from '@products/components/product-card/product-card';
+import { ProductsService, ProductCard } from '@products';
 import { Pagination } from '@shared/components/pagination/pagination';
 import { PaginationService } from '@shared/components/pagination/pagination.servive';
+import { ProductSkeletonComponent } from '@shared';
 
 @Component({
   selector: 'app-gender-page',
-  imports: [ProductCard, Pagination],
+  imports: [ProductCard, Pagination, ProductSkeletonComponent],
   templateUrl: './gender-page.html',
 })
-export class GenderPage {
+export default class GenderPage {
   route = inject(ActivatedRoute);
   productsService = inject(ProductsService);
   paginationService = inject(PaginationService);
+  private readonly ITEMS_PER_PAGE = 9;
 
   gender = toSignal(this.route.params.pipe(map(({ gender }) => gender)));
 
   productsResource = rxResource({
-    params: () => ({ page: this.paginationService.currentPage() - 1, gender: this.gender() }), // dispara la carga al crear el componente
+    params: () => ({ page: this.paginationService.currentPage() - 1, gender: this.gender() }),
     stream: ({ params }) => {
-      return this.productsService.getProducts({ offset: params.page * 9, gender: params.gender }); // Observable<Product[]>
+      return this.productsService.getProducts({
+        offset: params.page * this.ITEMS_PER_PAGE,
+        gender: params.gender,
+      });
     },
   });
+
+  getSkeletonCount(): number {
+    return this.ITEMS_PER_PAGE;
+  }
 }
